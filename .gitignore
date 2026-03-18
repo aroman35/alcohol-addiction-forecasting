@@ -1,0 +1,9 @@
+.idea/
+.venv/
+__pycache__/
+*.pyc
+
+notebook.tex
+notebook.pdf
+guiness_stats_report.md
+guiness_stats_report_files/
