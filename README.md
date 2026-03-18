@@ -177,23 +177,23 @@ Test : 2016 – 2020 (5 наблюдений)
 
 1. `Naive`:
 $$
-\hat{Y}_{t+1|t} = Y_t.
+\hat{Y}_{t+1|t} = Y_t
 $$
 
 2. `ETS` с трендом:
 $$
-\hat{Y}_{t+h|t} = \ell_t + h b_t,
+\hat{Y}_{t+h|t} = \ell_t + h b_t
 $$
 где `l_t` — уровень, а `b_t` — тренд.
 
 3. `SARIMA` в нашем случае вырождается в несезонную ARIMA-структуру для лог-ряда:
 $$
-\phi(B)(1-B)^d Z_t = c + \theta(B)\varepsilon_t.
+\phi(B)(1-B)^d Z_t = c + \theta(B)\varepsilon_t
 $$
 
 4. `Random Forest` использует лаговые признаки
 $$
-X_t = (Z_{t-1}, Z_{t-2}, Z_{t-3}).
+X_t = (Z_{t-1}, Z_{t-2}, Z_{t-3})
 $$
 
 5. `Theta` раскладывает ряд на theta-линии и комбинирует их прогнозы.
@@ -203,15 +203,15 @@ $$
 Критерии качества:
 
 $$
-MAE = \frac{1}{n}\sum_{t=1}^{n} |Y_t - \hat{Y}_t|,
+MAE = \frac{1}{n}\sum_{t=1}^{n} |Y_t - \hat{Y}_t|
 $$
 
 $$
-RMSE = \sqrt{\frac{1}{n}\sum_{t=1}^{n}(Y_t - \hat{Y}_t)^2},
+RMSE = \sqrt{\frac{1}{n}\sum_{t=1}^{n}(Y_t - \hat{Y}_t)^2}
 $$
 
 $$
-MAPE = \frac{100}{n}\sum_{t=1}^{n}\left|\frac{Y_t-\hat{Y}_t}{Y_t}\right|,
+MAPE = \frac{100}{n}\sum_{t=1}^{n}\left|\frac{Y_t-\hat{Y}_t}{Y_t}\right|
 $$
 
 где итог интерпретируется в процентах.
