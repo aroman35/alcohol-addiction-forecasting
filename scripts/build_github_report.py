@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from io import StringIO
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,8 +35,28 @@ def run_nbconvert() -> None:
     subprocess.run(cmd, cwd=ROOT, check=True)
 
 
+def convert_html_tables(text: str) -> str:
+    pattern = re.compile(
+        r"<div>\s*<style scoped>.*?</style>\s*(<table.*?</table>)\s*</div>",
+        flags=re.DOTALL,
+    )
+
+    def repl(match: re.Match[str]) -> str:
+        table_html = match.group(1)
+        try:
+            df = pd.read_html(StringIO(table_html))[0]
+            if df.columns.tolist()[0].startswith("Unnamed:"):
+                df = df.rename(columns={df.columns[0]: ""})
+            return "\n\n" + df.to_markdown(index=False) + "\n\n"
+        except Exception:
+            return "\n"
+
+    return pattern.sub(repl, text)
+
+
 def normalize_markdown(text: str) -> str:
     text = text.replace("\r\n", "\n")
+    text = convert_html_tables(text)
 
     text = re.sub(r"## 1\. Импорт библиотек и настройка\s*\n+", "", text)
     text = text.replace(
@@ -44,10 +67,19 @@ def normalize_markdown(text: str) -> str:
 
     text = text.replace(
         r"MAPE = \\frac{100\\%}{n}\\sum_{t=1}^{n}\\left|\\frac{Y_t-\\hat{Y}_t}{Y_t}\\right|.",
-        r"\operatorname{MAPE} = \frac{100}{n}\sum_{t=1}^{n}\left|\frac{Y_t-\hat{Y}_t}{Y_t}\right|,",
+        r"MAPE = \frac{100}{n}\sum_{t=1}^{n}\left|\frac{Y_t-\hat{Y}_t}{Y_t}\right|,",
+    )
+    text = text.replace(r"\\operatorname{MAPE}", r"MAPE")
+    text = text.replace(r"\\hat{Y}^{ens}_t", r"\\hat{Y}^{\\mathrm{ens}}_t")
+    text = text.replace(
+        "В терминах итогового прогноза ключевым числом является $\\hat{Y}_{2030}$, а прикладной вывод по риску\nзадаётся сравнением $G_{2030}^{day}$ с диапазоном $D_{low}$–$D_{high}$.",
+        "В терминах итогового прогноза ключевым числом является прогноз `Y_hat_2030`, а прикладной вывод по риску задаётся сравнением `G_day_2030` с диапазоном `D_low`–`D_high`.",
     )
 
     text = text.replace("![png](guiness_stats_report_files/", "![plot](assets/report/")
+    text = text.replace("`MAPE_%`", "`MAPE`")
+    text = text.replace("MAPE_%", "MAPE")
+    text = text.replace("\\\\", "\\")
     text = re.sub(r"\n {4,}", "\n", text)
     text = re.sub(r"\n{3,}", "\n\n", text).strip() + "\n"
 
